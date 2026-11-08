@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Comedero - Control Visual</title>
+<style>
+:root { 
+    --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
+    --card-bg: #ffffff; 
+    --text-main: #2d3748; 
+    --text-muted: #4a5568; 
+    --section-bg: #f8f9fa; 
+    --border-color: #e2e8f0; 
+    --input-bg: #ffffff; 
+    --input-border: #cbd5e0; 
+    --input-text: #2d3748; 
+    --feeder-body: #2d3748; 
+    --feeder-lid: #4a5568; 
+    --panel-bg: #1a202c; 
+    --status-bg: #edf2f7; 
+    --status-text: #2d3748; 
+}
+.dark-mode { 
+    --bg-gradient: linear-gradient(135deg, #1a202c, #111827); 
+    --card-bg: #1f2937; 
+    --text-main: #f9fafb; 
+    --text-muted: #9ca3af; 
+    --section-bg: #111827; 
+    --border-color: #374151; 
+    --input-bg: #374151; 
+    --input-border: #4b5563; 
+    --input-text: #f9fafb; 
+    --feeder-body: #111827; 
+    --feeder-lid: #374151; 
+    --panel-bg: #0b0f19; 
+    --status-bg: #374151; 
+    --status-text: #f9fafb; 
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; transition: background 0.3s ease, color 0.3s ease; }
+.card { width: 100%; max-width: 440px; background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 14px 35px rgba(0, 0, 0, 0.15); transition: background 0.3s ease, box-shadow 0.3s ease; position: relative; }
+.theme-toggle { position: absolute; top: 22px; right: 22px; background: var(--section-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px; transition: transform 0.2s, background 0.3s; }
+.theme-toggle:hover { transform: scale(1.1); }
+h2 { font-size: 22px; color: var(--text-main); margin-bottom: 18px; text-align: center; font-weight: 700; }
+.feeder-graphic-container { display: flex; flex-direction: column; align-items: center; background: var(--section-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden; transition: background 0.3s ease, border-color 0.3s ease; }
+.feeder-structure { position: relative; width: 130px; height: 140px; background: var(--feeder-body); border-radius: 12px 12px 20px 20px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: background 0.3s ease; }
+.feeder-lid { position: absolute; top: -12px; width: 90px; height: 16px; background: var(--feeder-lid); border-radius: 6px 6px 0 0; transition: background 0.3s ease; }
+.feeder-panel { position: absolute; top: 22px; display: flex; gap: 10px; background: var(--panel-bg); padding: 6px 10px; border-radius: 20px; transition: background 0.3s ease; }
+.led-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 8px; color: #a0aec0; font-weight: 600; }
+.led-bulb { width: 8px; height: 8px; border-radius: 50%; background: #4a5568; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); transition: all 0.3s ease; }
+.led-bulb.blue-on { background: #3182ce; box-shadow: 0 0 8px #3182ce, inset 0 1px 2px rgba(0,0,0,0.2); }
+.led-bulb.green-on { background: #38a169; box-shadow: 0 0 8px #38a169, inset 0 1px 2px rgba(0,0,0,0.2); }
+.led-bulb.red-on { background: #e53e3e; box-shadow: 0 0 8px #e53e3e, inset 0 1px 2px rgba(0,0,0,0.2); }
+.feeder-door-container { position: absolute; top: 72px; width: 50px; height: 50px; background: var(--panel-bg); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid var(--border-color); transition: background 0.3s ease, border-color 0.3s ease; }
+.feeder-door { width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; position: relative; transition: transform 0.4s ease; }
+.feeder-door::after { content: ''; position: absolute; top: 2px; left: 17px; width: 6px; height: 36px; background: #2d3748; border-radius: 3px; }
+.rotating { transform: rotate(180deg); }
+.feeder-bowl { width: 160px; height: 20px; background: #dd6b20; border-radius: 0 0 12px 12px; margin-top: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+.food-pellet { position: absolute; width: 8px; height: 8px; background: #d35400; border-radius: 50%; opacity: 0; z-index: 10; }
+@keyframes fallFood { 0% { transform: translateY(115px) scale(0.6); opacity: 1; } 100% { transform: translateY(175px) scale(1); opacity: 0; } }
+.animating-pellet { animation: fallFood 0.5s linear infinite; }
+.btn-mini-dispense { margin-top: 14px; background: #38a169; color: white; border: none; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 8px rgba(56, 161, 105, 0.3); transition: background 0.2s, transform 0.1s; }
+.btn-mini-dispense:hover { background: #2f855a; }
+.btn-mini-dispense:active { transform: scale(0.96); }
+.config-section { background: var(--section-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 14px; transition: background 0.3s ease, border-color 0.3s ease; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 5px; color: var(--text-main); }
+input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--input-border); border-radius: 10px; font-size: 13px; background-color: var(--input-bg); color: var(--input-text); transition: all 0.2s ease; }
+input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
+.row-tiempo { display: flex; gap: 8px; }
+.row-tiempo input { flex: 2; }
+.row-tiempo select { flex: 1; }
+.btn-config { background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.1s, opacity 0.2s; }
+.btn-config:hover { opacity: 0.92; }
+.btn-config:active { transform: scale(0.98); }
+#estado { font-weight: 600; margin-top: 14px; padding: 10px; background: var(--status-bg); border-radius: 10px; color: var(--status-text); font-size: 12px; text-align: center; transition: background 0.3s, color 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Cambiar modo claro/oscuro">🌙</button>
+    <h2>Smart Comedero</h2>
+    
+    <div class="config-section">
+        <div class="section-title">📡 Configuración Wi-Fi (AP)</div>
+        <label for="ssid">Nombre de Red (SSID):</label>
+        <input type="text" id="ssid" value="Comedero_ESP32">
+        <label for="password">Contraseña (Mín. 8 caract.):</label>
+        <input type="text" id="password" value="12345678">
+        <button class="btn-config" onclick="guardarWifi()">💾 Guardar Wi-Fi</button>
+    </div>
+
+    <div class="feeder-graphic-container">
+        <div class="feeder-structure">
+            <div class="feeder-lid"></div>
+            <div class="feeder-panel">
+                <div class="led-item"><div id="ledAuto" class="led-bulb"></div>Auto</div>
+                <div class="led-item"><div id="ledDisp" class="led-bulb"></div>Servo</div>
+                <div class="led-item"><div id="ledWifi" class="led-bulb"></div>Wi-Fi</div>
+            </div>
+            <div class="feeder-door-container"><div id="door" class="feeder-door"></div></div>
+        </div>
+        <div id="pellet1" class="food-pellet" style="left: calc(50% - 15px);"></div>
+        <div id="pellet2" class="food-pellet" style="left: calc(50% + 8px); animation-delay: 0.25s;"></div>
+        <div class="feeder-bowl"></div>
+        <button class="btn-mini-dispense" onclick="dispensarManual()">🍖 Dispensar Ahora</button>
+    </div>
+
+    <div class="config-section">
+        <div class="section-title">💡 Control de 4 LEDs Externos</div>
+        <label for="controlLeds">Estado de los LEDs:</label>
+        <select id="controlLeds" onchange="cambiarEstadoLeds()">
+            <option value="0" selected>Apagados</option>
+            <option value="1">Encendidos</option>
+        </select>
+    </div>
+
+    <div class="config-section">
+        <div class="section-title">⚙️ Configuración del Sistema</div>
+        <label for="duracionGiro">Duración de Movimiento (Segundos):</label>
+        <input type="number" id="duracionGiro" min="1" max="60" value="2">
+        <label for="valorTiempo">Intervalo de Espera Automático:</label>
+        <div class="row-tiempo">
+            <input type="number" id="valorTiempo" min="0" value="0">
+            <select id="unidadTiempo">
+                <option value="s">Seg</option>
+                <option value="m">Min</option>
+                <option value="h">Horas</option>
+            </select>
+        </div>
+        <label for="auto">Modo Automático:</label>
+        <select id="auto" onchange="actualizarModoAuto()">
+            <option value="0" selected>Desactivado (Solo Manual)</option>
+            <option value="1">Activado</option>
+        </select>
+        <button class="btn-config" style="margin-top: 15px;" onclick="guardarConfig()">💾 Guardar Sistema</button>
+    </div>
+    
+    <div id="estado">Estado: Listo para usar</div>
+</div>
+
+<script>
+function toggleTheme() { 
+    const body = document.body; 
+    const themeBtn = document.getElementById('themeBtn'); 
+    body.classList.toggle('dark-mode'); 
+    themeBtn.innerText = body.classList.contains('dark-mode') ? '☀️' : '🌙'; 
+}
+
+function actualizarModoAuto() { 
+    const autoVal = document.getElementById('auto').value; 
+    const ledAuto = document.getElementById('ledAuto'); 
+    if (autoVal == '1') { 
+        ledAuto.classList.add('blue-on'); 
+    } else { 
+        ledAuto.classList.remove('blue-on'); 
+    } 
+}
+
+function cambiarEstadoLeds() { 
+    const estadoVal = document.getElementById('controlLeds').value; 
+    const estadoEl = document.getElementById('estado'); 
+    estadoEl.innerText = estadoVal == '1' ? '🟢 LEDs encendidos (Simulado)' : '🔴 LEDs apagados (Simulado)'; 
+}
+
+function activarAnimacionDispensar() {
+    const ledDisp = document.getElementById('ledDisp'); 
+    const door = document.getElementById('door'); 
+    const p1 = document.getElementById('pellet1'); 
+    const p2 = document.getElementById('pellet2');
+    
+    ledDisp.classList.add('green-on'); 
+    door.classList.add('rotating'); 
+    p1.classList.add('animating-pellet'); 
+    p2.classList.add('animating-pellet');
+    
+    setTimeout(() => {
+        ledDisp.classList.remove('green-on'); 
+        door.classList.remove('rotating'); 
+        p1.classList.remove('animating-pellet'); 
+        p2.classList.remove('animating-pellet');
+    }, 2000);
+}
+
+function dispensarManual() { 
+    const estadoEl = document.getElementById('estado'); 
+    estadoEl.innerText = '⏳ Simulando movimiento de servo...'; 
+    activarAnimacionDispensar(); 
+    setTimeout(() => {
+        estadoEl.innerText = '🟢 ¡Comida dispensada con éxito!';
+    }, 2000);
+}
+
+function guardarWifi() { 
+    alert('Función de prueba: En el ESP32 esto guardaría la red Wi-Fi.'); 
+}
+
+function guardarConfig() { 
+    alert('Función de prueba: En el ESP32 esto guardaría la configuración.'); 
+}
+
+window.onload = function() { 
+    actualizarModoAuto(); 
+}
+</script>
+
+</body>
+</html>
